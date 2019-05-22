@@ -105,7 +105,6 @@ public class Equation {
                 } else {
                     f = Integer.parseInt(scs);
                 }
-                Log.d("Equation", power + " " + f);
                 if (f > power) {
                         power = f;
                     }
@@ -120,7 +119,18 @@ public class Equation {
                 scs = "";
             }
      }
-
+     private double[] solveSquare(int a, int b, double c) {
+         double roots[] = new double[2];
+         double D = b*b - (4*a*c);
+         if(D<0) {
+             return roots;
+         }
+         roots[0] = (-b-Math.sqrt(D))/(2*a);
+         if(D>0) {
+             roots[1] = (-b + Math.sqrt(D)) / (2 * a);
+         }
+         return roots;
+     }
     public void parse() throws Exception {
 
         for (int i = 0; i < eq.length(); i++) {
@@ -187,11 +197,17 @@ public class Equation {
             }
         }
         pl();
-        Log.d("MyActivity", power +" here");
         if(power == 0) {
             throw new Exception("Не уравнение");
         }
-        if(power == 2) {
+        if(power == 1) {
+            int a = st.get(1);
+            if(a==0) {
+                throw new Exception("Не уравнение");
+            }
+           roots.add(-cl/(st.get(1) + 0d));
+        }
+        else if(power == 2) {
             int a = st.get(2);
             int b = 0;
             try {
@@ -200,14 +216,49 @@ public class Equation {
             catch (Exception e) {
 
             }
-            Log.d("MyActivity", a + " " + b + " " + cl);
-            int D = b*b - (4*a*cl);
-            if(D<0) {
-                return;
+            for(double d: solveSquare(a,b,cl)) {
+                roots.add(d);
             }
-            roots.add((-b-Math.sqrt(D))/(2*a));
-            if(D>0) {
-                roots.add((-b + Math.sqrt(D)) / (2 * a));
+        }
+        else if(power == 3) {
+            int a = st.get(3);
+            int b = 0;
+            int c = 0;
+            try {
+                b = st.get(2);
+            }
+            catch(Exception e) {}
+            try {
+                c = st.get(1);
+            }
+            catch (Exception e) {}
+            if(cl == 0) {
+                roots.add(0d);
+                for(double d: solveSquare(a,b,c)) {
+                    roots.add(d);
+                }
+            }
+            else if(cl != 0 && b == 0 && c == 0) {
+                roots.add(Math.cbrt((-cl/(a+0d))));
+
+            }
+        }
+        else if(power == 4) {
+            int a = st.get(4);
+            int b = 0;
+            int c = 0;
+            int d = 0;
+            try { b = st.get(3); } catch(Exception e) {}
+            try { c = st.get(2); } catch (Exception e) {}
+            try { d = st.get(1); } catch (Exception e) {}
+            //x^4+4x^2 - 21 = 0
+            //y^2 + 4y - 21 = 0
+            if(b == 0 && d == 0) {
+                for(double f: solveSquare(a,c,cl)) {
+                    for(double g: solveSquare(1,0, f)) {
+                        roots.add(g);
+                    }
+                }
             }
         }
     }

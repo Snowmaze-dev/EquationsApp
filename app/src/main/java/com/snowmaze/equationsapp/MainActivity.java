@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }).start();
             adapter.addEquation(equat);
         } catch (Exception e) {
-            Toast.makeText(this, "Не уравнение",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Не уравнение " + e.getLocalizedMessage(),Toast.LENGTH_SHORT).show();
         }
 
     }
