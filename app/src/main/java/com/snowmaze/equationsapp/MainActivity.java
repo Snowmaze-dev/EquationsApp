@@ -1,29 +1,30 @@
 package com.snowmaze.equationsapp;
 
+import android.app.AlertDialog;
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
+import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, EquationsListAdapter.ItemClick {
+public class MainActivity extends AppCompatActivity implements EquationsListAdapter.ItemClick {
 
 
     RecyclerView list;
-    Button add;
-    EditText equation;
     EquationsListAdapter adapter;
+    Toolbar toolbar;
 
     @Override
     public void deleteClicked(final Equation eq) {
@@ -39,6 +40,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void itemClicked(Equation eq) {
     }
 
+    @Override
+    public void itemSwapped(List<Equation> equations) {
+        new swap().execute(equations);
+    }
+
     @Database(entities = {Equation.class}, version = 1)
     public static abstract class AppDatabase extends RoomDatabase {
         public abstract EquationDAO getEquationDAO();
@@ -50,34 +56,66 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         db = Room.databaseBuilder(this, AppDatabase.class, "equations").build();
-        equation = findViewById(R.id.equation);
-        add = findViewById(R.id.add);
         list = findViewById(R.id.list);
-        adapter = new EquationsListAdapter(this);
+        toolbar = findViewById(R.id.toolbar_main);
+        adapter = new EquationsListAdapter();
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);
+        ItemTouchHelper.Callback callback =
+                new ItemMoveCallBack(adapter);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(list);
         adapter.setItemClickListener(this);
-        add.setOnClickListener(this);
+        setSupportActionBar(toolbar);
         new getEquations().execute();
     }
 
     @Override
-    public void onClick(View v) {
-        final Equation equat = new Equation(equation.getText().toString());
-        try {
-            equat.parse();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    db.getEquationDAO().insert(equat);
-                }
-            }).start();
-            adapter.addEquation(equat);
-        } catch (Exception e) {
-            Toast.makeText(this, "Не уравнение " + e.getLocalizedMessage(),Toast.LENGTH_SHORT).show();
-        }
-
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
     }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        final EditText edittext = new EditText(this);
+        alert.setMessage("Введите уравнение");
+        alert.setTitle("Доабвить новое уравнение");
+        alert.setView(edittext);
+
+        alert.setPositiveButton("Добавить", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                final Equation equat = new Equation(edittext.getText().toString());
+                try {
+                    equat.parse();
+                    insert(equat);
+                    adapter.addEquation(equat);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, e.getMessage(),Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        alert.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
+        });
+
+        alert.show();
+        return true;
+    }
+
+    public void insert(final Equation equation) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                db.getEquationDAO().insert(equation);
+            }
+        }).start();
+    }
+
     class getEquations extends AsyncTask<Void, Void, List<Equation>> {
 
         @Override
@@ -88,6 +126,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected void onPostExecute(List<Equation> equations) {
             adapter.setEquations(equations);
+        }
+    }
+    class swap extends  AsyncTask<List<Equation>, Void, Void> {
+
+        @Override
+        protected Void doInBackground(List<Equation>... lists) {
+            for(Equation equation: lists[0]) {
+                db.getEquationDAO().delete(equation);
+            }
+            for(Equation equation: lists[0]) {
+                insert(equation);
+            }
+            return null;
         }
     }
 }

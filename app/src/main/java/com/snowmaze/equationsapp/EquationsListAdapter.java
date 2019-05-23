@@ -1,6 +1,7 @@
 package com.snowmaze.equationsapp;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,17 +10,16 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdapter.ViewHolder> {
+public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdapter.ViewHolder> implements ItemMoveCallBack.ItemTouchHelperContract{
 
     LayoutInflater myInflater;
+    Context context;
     List<Equation> equations = new ArrayList<>();
+    int gray;
     private ItemClick itemClick;
-
-    EquationsListAdapter(Context context) {
-        myInflater = LayoutInflater.from(context);
-    }
 
     public void addEquation(Equation equation) {
         equations.add(equation);
@@ -32,6 +32,9 @@ public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdap
 
     @Override
     public ViewHolder onCreateViewHolder( ViewGroup parent, int i) {
+        context = parent.getContext();
+        gray = context.getResources().getColor(R.color.colorGray);
+        myInflater = LayoutInflater.from(context);
         View view = myInflater.inflate(R.layout.item_equation, parent, false);
         return new ViewHolder(view);
     }
@@ -53,9 +56,38 @@ public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdap
             holder.equation.setText(s);
     }
 
+
     @Override
     public int getItemCount() {
         return equations.size();
+    }
+
+    @Override
+    public void onRowMoved(int fromPosition, int toPosition) {
+        if (fromPosition < toPosition) {
+            for (int i = fromPosition; i < toPosition; i++) {
+                Collections.swap(equations, i, i + 1);
+            }
+        } else {
+            for (int i = fromPosition; i > toPosition; i--) {
+                Collections.swap(equations, i, i - 1);
+            }
+        }
+        itemClick.itemSwapped(equations);
+        notifyItemMoved(fromPosition, toPosition);
+    }
+
+    @Override
+    public void onRowSelected(ViewHolder holder) {
+
+        holder.itemView.setBackgroundColor(gray);
+        holder.delete.setBackgroundColor(gray);
+    }
+
+    @Override
+    public void onRowClear(ViewHolder holder) {
+        holder.itemView.setBackgroundColor(Color.BLACK);
+        holder.delete.setBackgroundColor(Color.BLACK);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -87,6 +119,7 @@ public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdap
     public interface ItemClick {
         void deleteClicked(Equation eq);
         void itemClicked(Equation eq);
+        void itemSwapped(List<Equation> equations);
     }
     public void setItemClickListener(ItemClick itemClickListener) {
         this.itemClick = itemClickListener;

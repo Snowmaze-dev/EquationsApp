@@ -197,6 +197,8 @@ public class Equation {
             }
         }
         pl();
+        Log.d("MyActivity", type +" type");
+        Log.d("MyActivity", power +" power");
         if(power == 0) {
             throw new Exception("Не уравнение");
         }
@@ -232,6 +234,7 @@ public class Equation {
                 c = st.get(1);
             }
             catch (Exception e) {}
+            Log.d("MyActivity", a + " " + b + " " + c + " " + cl + " numbers");
             if(cl == 0) {
                 roots.add(0d);
                 for(double d: solveSquare(a,b,c)) {
@@ -251,11 +254,9 @@ public class Equation {
             try { b = st.get(3); } catch(Exception e) {}
             try { c = st.get(2); } catch (Exception e) {}
             try { d = st.get(1); } catch (Exception e) {}
-            //x^4+4x^2 - 21 = 0
-            //y^2 + 4y - 21 = 0
             if(b == 0 && d == 0) {
                 for(double f: solveSquare(a,c,cl)) {
-                    for(double g: solveSquare(1,0, f)) {
+                    for(double g: solveSquare(1,0, -f)) {
                         roots.add(g);
                     }
                 }
