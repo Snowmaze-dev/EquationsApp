@@ -29,12 +29,7 @@ public class MainActivity extends AppCompatActivity implements EquationsListAdap
 
     @Override
     public void deleteClicked(final Equation eq) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                db.getEquationDAO().delete(eq);
-            }
-        }).start();
+        new replace().execute(adapter.getEquations());
     }
 
     @Override
@@ -42,9 +37,8 @@ public class MainActivity extends AppCompatActivity implements EquationsListAdap
     }
 
     @Override
-    public void itemSwapped(List<Equation> equations) {
-        new swap().execute(equations);
-        Log.d("Main", "here");
+    public void itemSwapped() {
+        new replace().execute(adapter.getEquations());
     }
 
     @Database(entities = {Equation.class}, version = 1)
@@ -140,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements EquationsListAdap
             adapter.setEquations(equations);
         }
     }
-    class swap extends  AsyncTask<List<Equation>, Void, Void> {
+    class replace extends  AsyncTask<List<Equation>, Void, Void> {
 
         @Override
         protected Void doInBackground(List<Equation>... lists) {

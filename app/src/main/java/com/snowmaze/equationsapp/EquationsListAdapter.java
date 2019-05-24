@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdapter.ViewHolder> implements ItemMoveCallBack.ItemTouchHelperContract{
@@ -74,7 +73,7 @@ public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdap
         Equation eq = equations.get(toPosition).setId(fromPosition);
         equations.set(toPosition,equation);
         equations.set(fromPosition,eq);
-        itemClick.itemSwapped(equations);
+        itemClick.itemSwapped();
         notifyItemMoved(fromPosition, toPosition);
     }
 
@@ -113,6 +112,9 @@ public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdap
             Equation eq = equations.get(getAdapterPosition());
             if(v.getId() == R.id.delete) {
                 equations.remove(eq);
+                for(int i = eq.getId(); i<equations.size(); i++) {
+                    equations.set(i, equations.get(i).setId(i));
+                }
                 notifyDataSetChanged();
                 itemClick.deleteClicked(eq);
             }
@@ -124,7 +126,7 @@ public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdap
     public interface ItemClick {
         void deleteClicked(Equation eq);
         void itemClicked(Equation eq);
-        void itemSwapped(List<Equation> equations);
+        void itemSwapped();
     }
     public void setItemClickListener(ItemClick itemClickListener) {
         this.itemClick = itemClickListener;
