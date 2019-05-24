@@ -3,6 +3,7 @@ package com.snowmaze.equationsapp;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,7 +42,12 @@ public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdap
 
     @Override
     public void onBindViewHolder( ViewHolder holder, int pos) {
-            Equation eq = equations.get(pos);
+            Equation eq = null;
+            for(Equation equation: equations) {
+                if(equation.getId() == pos) {
+                    eq = equation;
+                }
+            }
             String s = eq.getEquation();
             ArrayList<Double> roots = equations.get(pos).getRoots();
             s += System.lineSeparator();
@@ -64,15 +70,10 @@ public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdap
 
     @Override
     public void onRowMoved(int fromPosition, int toPosition) {
-        if (fromPosition < toPosition) {
-            for (int i = fromPosition; i < toPosition; i++) {
-                Collections.swap(equations, i, i + 1);
-            }
-        } else {
-            for (int i = fromPosition; i > toPosition; i--) {
-                Collections.swap(equations, i, i - 1);
-            }
-        }
+        Equation equation = equations.get(fromPosition).setId(toPosition);
+        Equation eq = equations.get(toPosition).setId(fromPosition);
+        equations.set(toPosition,equation);
+        equations.set(fromPosition,eq);
         itemClick.itemSwapped(equations);
         notifyItemMoved(fromPosition, toPosition);
     }
@@ -88,6 +89,10 @@ public class EquationsListAdapter extends RecyclerView.Adapter<EquationsListAdap
     public void onRowClear(ViewHolder holder) {
         holder.itemView.setBackgroundColor(Color.BLACK);
         holder.delete.setBackgroundColor(Color.BLACK);
+    }
+
+    public List<Equation> getEquations() {
+        return equations;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

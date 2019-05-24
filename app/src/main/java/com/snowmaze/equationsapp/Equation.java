@@ -50,8 +50,9 @@ class HashMapTypeConverter {
 @Entity
 public class Equation {
 
-     @PrimaryKey(autoGenerate = true)
+     @PrimaryKey
      int id = 0;
+
      int cl = 0;
      HashMap<Integer, Integer> st = new HashMap<>();
      private ArrayList<Double> roots = new ArrayList<>();
@@ -63,8 +64,10 @@ public class Equation {
      int b = 0;
      int power = 0;
 
-     Equation(String eq) {
+     Equation(String eq, int id) {
         this.eq = eq;
+        this.id = id;
+
     }
 
     private void pl() {
@@ -119,15 +122,15 @@ public class Equation {
                 scs = "";
             }
      }
-     private double[] solveSquare(int a, int b, double c) {
-         double roots[] = new double[2];
+     private ArrayList<Double> solveSquare(int a, int b, double c) {
+         ArrayList<Double> roots = new ArrayList();
          double D = b*b - (4*a*c);
          if(D<0) {
              return roots;
          }
-         roots[0] = (-b-Math.sqrt(D))/(2*a);
+         roots.add((-b-Math.sqrt(D))/(2*a));
          if(D>0) {
-             roots[1] = (-b + Math.sqrt(D)) / (2 * a);
+             roots.add((-b + Math.sqrt(D)) / (2 * a));
          }
          return roots;
      }
@@ -197,8 +200,6 @@ public class Equation {
             }
         }
         pl();
-        Log.d("MyActivity", type +" type");
-        Log.d("MyActivity", power +" power");
         if(power == 0) {
             throw new Exception("Не уравнение");
         }
@@ -234,7 +235,6 @@ public class Equation {
                 c = st.get(1);
             }
             catch (Exception e) {}
-            Log.d("MyActivity", a + " " + b + " " + c + " " + cl + " numbers");
             if(cl == 0) {
                 roots.add(0d);
                 for(double d: solveSquare(a,b,c)) {
@@ -255,8 +255,8 @@ public class Equation {
             try { c = st.get(2); } catch (Exception e) {}
             try { d = st.get(1); } catch (Exception e) {}
             if(b == 0 && d == 0) {
-                for(double f: solveSquare(a,c,cl)) {
-                    for(double g: solveSquare(1,0, -f)) {
+                for(Double f: solveSquare(a,c,cl)) {
+                    for(Double g: solveSquare(1,0, -f)) {
                         roots.add(g);
                     }
                 }
@@ -277,5 +277,14 @@ public class Equation {
 
     public String getEquation() {
          return eq;
+    }
+
+    public int getId() {
+         return id;
+    }
+
+    public Equation setId(int id) {
+         this.id = id;
+         return this;
     }
 }

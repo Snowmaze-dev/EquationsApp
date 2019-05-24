@@ -15,8 +15,14 @@ public interface EquationDAO {
     @Insert(onConflict = REPLACE)
     void insert(Equation... equations);
 
+    @Insert(onConflict = REPLACE)
+    void insertAll(Iterable<Equation> iterable);
+
     @Delete
     void delete(Equation equation);
+
+    @Query("DELETE FROM Equation")
+    void clearTable();
 
     @Query("SELECT * FROM Equation")
     List<Equation> getAllEquations();

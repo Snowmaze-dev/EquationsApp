@@ -12,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -43,10 +44,12 @@ public class MainActivity extends AppCompatActivity implements EquationsListAdap
     @Override
     public void itemSwapped(List<Equation> equations) {
         new swap().execute(equations);
+        Log.d("Main", "here");
     }
 
     @Database(entities = {Equation.class}, version = 1)
-    public static abstract class AppDatabase extends RoomDatabase {
+    public static abstract
+    class AppDatabase extends RoomDatabase {
         public abstract EquationDAO getEquationDAO();
     }
     AppDatabase db;
@@ -87,7 +90,16 @@ public class MainActivity extends AppCompatActivity implements EquationsListAdap
 
         alert.setPositiveButton("Добавить", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                final Equation equat = new Equation(edittext.getText().toString());
+                int id = 0;
+                if(!(adapter.getEquations().size() == 0)) {
+                    for (Equation equation : adapter.getEquations()) {
+                        if (equation.getId() > id) {
+                            id = equation.getId();
+                        }
+                    }
+                        id += 1;
+                }
+                final Equation equat = new Equation(edittext.getText().toString(),id);
                 try {
                     equat.parse();
                     insert(equat);
@@ -132,12 +144,8 @@ public class MainActivity extends AppCompatActivity implements EquationsListAdap
 
         @Override
         protected Void doInBackground(List<Equation>... lists) {
-            for(Equation equation: lists[0]) {
-                db.getEquationDAO().delete(equation);
-            }
-            for(Equation equation: lists[0]) {
-                insert(equation);
-            }
+            db.getEquationDAO().clearTable();
+            db.getEquationDAO().insertAll(lists[0]);
             return null;
         }
     }
